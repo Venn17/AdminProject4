@@ -1,17 +1,17 @@
-﻿@model IEnumerable<Project4AdminPage.Models.Category>
+﻿@model IEnumerable<Project4AdminPage.Models.Coupon>
 
 @{
     ViewData["Title"] = "Index";
 }
 <div>
-    <h2 class="text-center">Quản lý thể loại</h2>
+    <h2 class="text-center">Quản lý Voucher</h2>
 </div>
-<form asp-controller="Category" asp-action="Search" method="get" class="form-inline">
+<form asp-controller="Coupon" asp-action="Search" method="get" class="form-inline">
     <div class="col-8">
-        <a asp-controller="Category" asp-action="Create" class="btn btn-warning">Thêm mới</a>
+        <a asp-controller="Coupon" asp-action="Create" class="btn btn-warning">Thêm mới</a>
     </div>
     <div class="form-group col-4">
-        <input class="form-control mr-1" type="text" placeholder="Tên thể loại" name="key" />
+        <input class="form-control mr-1" type="text" placeholder="Tên voucher" name="key" />
         <input type="submit" value="Tìm Kiếm" class="btn btn-success" />
     </div>
 </form>
@@ -23,7 +23,13 @@
                 ID
             </th>
             <th>
-                Tên Thể Loại
+                Mã Voucher
+            </th>
+            <th>
+                Mô tả
+            </th>
+            <th>
+                Giảm Giá
             </th>
             <th>
                 Trạng Thái
@@ -42,6 +48,12 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Percent) %
                 </td>
                 <td>
                     @if (item.Status == true)

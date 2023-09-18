@@ -1,36 +1,43 @@
-﻿@model IEnumerable<Project4AdminPage.Models.Category>
+﻿@model IEnumerable<Project4AdminPage.Models.Users>
 
 @{
     ViewData["Title"] = "Index";
 }
-<div>
-    <h2 class="text-center">Quản lý thể loại</h2>
+
+<div class="text-center">
+    <h2>Quản Lý Người Dùng</h2>
 </div>
-<form asp-controller="Category" asp-action="Search" method="get" class="form-inline">
-    <div class="col-8">
-        <a asp-controller="Category" asp-action="Create" class="btn btn-warning">Thêm mới</a>
+<form asp-controller="Users" asp-action="Search" method="get" class="form-inline">
+    <div class="col-6">
+        <a asp-controller="Login" asp-action="Register" class="btn btn-warning">Đăng Ký Tài Khoản Mới</a>
     </div>
-    <div class="form-group col-4">
-        <input class="form-control mr-1" type="text" placeholder="Tên thể loại" name="key" />
+    <div class="form-group col-6">
+        <input class="form-control mr-1" type="text" placeholder="Tên người dùng" name="key" />
         <input type="submit" value="Tìm Kiếm" class="btn btn-success" />
     </div>
 </form>
-
-<table class="table table-bordered mt-2">
+<table class="table">
     <thead>
         <tr>
             <th>
-                ID
+                Ảnh Đại Diện
             </th>
             <th>
-                Tên Thể Loại
+                Tên Người Dùng
             </th>
             <th>
-                Trạng Thái
+                Email
             </th>
             <th>
-                Các Chức Năng
+                Số Điện Thoại
             </th>
+            <th>
+                Địa Chỉ
+            </th>
+            <th>
+                Quyền Truy Cập
+            </th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -38,23 +45,32 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Id)
+                    <img src="~/images/avatars/@item.Avatar" alt="@item.Name" />
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Name)
                 </td>
                 <td>
-                    @if (item.Status == true)
+                    @Html.DisplayFor(modelItem => item.Email)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Phone)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Address)
+                </td>
+                <td>
+                    @if (item.Role == 0)
                     {
-                        <p class="text-success">Đang Hoạt Động</p>
+                        <p>Người Dùng</p>
                     }
                     else
                     {
-                        <p class="text-danger">Không Hoạt Động</p>
+                        <p>Quản Trị Viên</p>
                     }
                 </td>
                 <td>
-                    <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
+                    <a class="btn btn-primary" asp-action="Detail" asp-route-id="@item.Id">Chi Tiết</a> |
                     <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
                 </td>
             </tr>

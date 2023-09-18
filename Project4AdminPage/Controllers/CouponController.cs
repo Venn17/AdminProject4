@@ -9,8 +9,8 @@ using Project4AdminPage.Models;
 
 namespace Project4AdminPage.Controllers
 {
-    [Route("categories")]
-    public class CategoryController : Controller
+    [Route("coupons")]
+    public class CouponController : Controller
     {
         string host_api = "http://localhost:50041/";
         HttpClient client = new HttpClient();
@@ -27,12 +27,13 @@ namespace Project4AdminPage.Controllers
                 Users u = JsonConvert.DeserializeObject<Users>(user);
                 ViewBag.Logined = u;
 
-                var data = await client.GetStringAsync("api/categories");
-                int start = (page - 1) * 5;
-                List<Category> categories = JsonConvert.DeserializeObject<List<Category>>(data);
-                List<Category> datas = categories.Skip(start).Take(5).ToList();
-                int totalPage = categories.Count() / 5;
-                if (categories.Count() % 5 > 0)
+                var data = await client.GetStringAsync("api/coupons");
+
+                int start = (page - 1) * 6;
+                List<Coupon> coupons = JsonConvert.DeserializeObject<List<Coupon>>(data);
+                List<Coupon> datas = coupons.Skip(start).Take(6).ToList();
+                int totalPage = coupons.Count() / 6;
+                if (coupons.Count() % 4 > 0)
                 {
                     totalPage = totalPage + 1;
                 }
@@ -40,12 +41,12 @@ namespace Project4AdminPage.Controllers
                 ViewBag.currentPage = page;
                 return View(datas);
             }
-            return RedirectToAction("Login","Login");
+            return RedirectToAction("Login", "Login");
         }
 
         [HttpGet]
         [Route("create")]
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult>Create()
         {
             client.BaseAddress = new Uri(host_api);
             var _data = await client.GetStringAsync("api/logineds");
@@ -64,17 +65,19 @@ namespace Project4AdminPage.Controllers
 
         [HttpPost]
         [Route("create")]
-        public async Task<IActionResult> Create([Bind("Name")] string name)
+        public async Task<IActionResult> Create([Bind("Name","Description","Percent")] string name,string description,int percent)
         {
-            Category category = new Category();
-            category.Name = name;
-            category.Status = true;
+            Coupon coupon = new Coupon();
+            coupon.Name = name;
+            coupon.Description = description;
+            coupon.Percent = percent;
+            coupon.Status = true;
             if (!ModelState.IsValid)
             {
                 return NotFound("Không có thông tin !");
             }
             client.BaseAddress = new Uri(host_api);
-            var result = await client.PostAsJsonAsync("api/categories", category);
+            var result = await client.PostAsJsonAsync("api/coupons", coupon);
 
             return RedirectToAction("Index");
         }
@@ -92,19 +95,19 @@ namespace Project4AdminPage.Controllers
                 Users u = JsonConvert.DeserializeObject<Users>(user);
                 ViewBag.Logined = u;
 
-                var result = await client.GetStringAsync("api/categories/" + id);
-                Category category = JsonConvert.DeserializeObject<Category>(result);
-                return View(category);
+                var result = await client.GetStringAsync("api/coupons/" + id);
+                Coupon c = JsonConvert.DeserializeObject<Coupon>(result);
+                return View(c);
             }
             return RedirectToAction("Login", "Login");
         }
 
         [HttpPost]
         [Route("edit")]
-        public async Task<IActionResult> Edit(Category category)
+        public async Task<IActionResult> Edit(Coupon c)
         {
             client.BaseAddress = new Uri(host_api);
-            var result = await client.PutAsJsonAsync<Category>("api/categories/" + category.Id,category);
+            var result = await client.PutAsJsonAsync<Coupon>("api/coupons/" + c.Id, c);
             return RedirectToAction("Index");
         }
 
@@ -121,7 +124,7 @@ namespace Project4AdminPage.Controllers
                 Users u = JsonConvert.DeserializeObject<Users>(user);
                 ViewBag.Logined = u;
 
-                await client.DeleteAsync("api/categories/" + id);
+                await client.DeleteAsync("api/coupons/" + id);
                 return RedirectToAction("Index");
             }
             return RedirectToAction("Login", "Login");
@@ -144,13 +147,11 @@ namespace Project4AdminPage.Controllers
                 {
                     return RedirectToAction("Index");
                 }
-
-                var data = await client.GetStringAsync("api/categories/search?search=" + key);
-                List<Category> categories = JsonConvert.DeserializeObject<List<Category>>(data);
-                return View("Index", categories);
+                var data = await client.GetStringAsync("api/coupons/search?search=" + key);
+                List<Coupon> c = JsonConvert.DeserializeObject<List<Coupon>>(data);
+                return View("Index", c);
             }
             return RedirectToAction("Login", "Login");
         }
-
     }
 }

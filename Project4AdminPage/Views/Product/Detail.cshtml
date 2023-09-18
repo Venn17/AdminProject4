@@ -1,0 +1,71 @@
+﻿@model Project4AdminPage.Models.Product
+
+@{
+    ViewData["Title"] = "Detail";
+}
+
+<div class="text-center">
+    <h2>Chi Tiết Sản Phẩm</h2>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-8">
+        <div class="text-center">
+            <img src="~/images/products/@Model.Image" alt="@Model.Name" width="300" style="border-radius:10px" />
+        </div>
+        <hr />
+        <table class="table table-bordered table-hover">
+            <tr>
+                <th>Tên Sản Phẩm</th>
+                <td>@Html.DisplayFor(model => model.Name)</td>
+            </tr>
+            <tr>
+                <th>Giá</th>
+                <td>@Html.DisplayFor(model => model.Price)</td>
+            </tr>
+            <tr>
+                <th>
+                    Giá KM
+                </th>
+                <td>
+                    @Html.DisplayFor(model => model.SalePrice)
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Mô Tả
+                </th>
+                <td>
+                    @Html.DisplayFor(model => model.Description)
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Số Lượng Bán Ra
+                </th>
+                <td>
+                    @Html.DisplayFor(model => model.Sold)
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Thể Loại
+                </th>
+                <td>
+                    @foreach (var item in ViewBag.Category)
+                    {
+                        if (item.Id == Model.CategoryID)
+                        {
+                            @item.Name
+                        }
+                    }
+                </td>
+            </tr>
+        </table>
+        <div>
+            <a class="btn btn-warning" asp-controller="Product" asp-action="Edit" asp-route-id="@Model.Id">Sửa</a> |
+            <a class="btn btn-primary" asp-action="Index" asp-controller="Product">Quay Lại</a>
+        </div>
+    </div>
+</div>
+

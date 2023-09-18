@@ -9,8 +9,8 @@ using Project4AdminPage.Models;
 
 namespace Project4AdminPage.Controllers
 {
-    [Route("categories")]
-    public class CategoryController : Controller
+    [Route("sizes")]
+    public class SizeController : Controller
     {
         string host_api = "http://localhost:50041/";
         HttpClient client = new HttpClient();
@@ -27,20 +27,23 @@ namespace Project4AdminPage.Controllers
                 Users u = JsonConvert.DeserializeObject<Users>(user);
                 ViewBag.Logined = u;
 
-                var data = await client.GetStringAsync("api/categories");
+                var data = await client.GetStringAsync("api/sizes");
                 int start = (page - 1) * 5;
-                List<Category> categories = JsonConvert.DeserializeObject<List<Category>>(data);
-                List<Category> datas = categories.Skip(start).Take(5).ToList();
-                int totalPage = categories.Count() / 5;
-                if (categories.Count() % 5 > 0)
+                List<Sizes> sizes = JsonConvert.DeserializeObject<List<Sizes>>(data);
+                List<Sizes> data_page = sizes.Skip(start).Take(5).ToList();
+                int totalPage = sizes.Count() / 5;
+                if (sizes.Count() % 5 > 0)
                 {
                     totalPage = totalPage + 1;
                 }
                 ViewBag.totalPage = totalPage;
                 ViewBag.currentPage = page;
-                return View(datas);
+                var product = await client.GetStringAsync("api/products");
+                List<Product> products = JsonConvert.DeserializeObject<List<Product>>(product);
+                ViewBag.Product = products;
+                return View(data_page);
             }
-            return RedirectToAction("Login","Login");
+            return RedirectToAction("Login", "Login");
         }
 
         [HttpGet]
@@ -57,6 +60,9 @@ namespace Project4AdminPage.Controllers
                 Users u = JsonConvert.DeserializeObject<Users>(user);
                 ViewBag.Logined = u;
 
+                var product = await client.GetStringAsync("api/products");
+                List<Product> products = JsonConvert.DeserializeObject<List<Product>>(product);
+                ViewBag.Product = products;
                 return View();
             }
             return RedirectToAction("Login", "Login");
@@ -64,17 +70,17 @@ namespace Project4AdminPage.Controllers
 
         [HttpPost]
         [Route("create")]
-        public async Task<IActionResult> Create([Bind("Name")] string name)
+        public async Task<IActionResult> Create([Bind("Name", "ProductID")] string name, int productID)
         {
-            Category category = new Category();
-            category.Name = name;
-            category.Status = true;
+            Sizes s = new Sizes();
+            s.Name = name;
+            s.ProductID = productID;
             if (!ModelState.IsValid)
             {
                 return NotFound("Không có thông tin !");
             }
             client.BaseAddress = new Uri(host_api);
-            var result = await client.PostAsJsonAsync("api/categories", category);
+            var result = await client.PostAsJsonAsync("api/sizes", s);
 
             return RedirectToAction("Index");
         }
@@ -92,19 +98,22 @@ namespace Project4AdminPage.Controllers
                 Users u = JsonConvert.DeserializeObject<Users>(user);
                 ViewBag.Logined = u;
 
-                var result = await client.GetStringAsync("api/categories/" + id);
-                Category category = JsonConvert.DeserializeObject<Category>(result);
-                return View(category);
+                var result = await client.GetStringAsync("api/sizes/" + id);
+                Sizes c = JsonConvert.DeserializeObject<Sizes>(result);
+                var product = await client.GetStringAsync("api/products");
+                List<Product> products = JsonConvert.DeserializeObject<List<Product>>(product);
+                ViewBag.Product = products;
+                return View(c);
             }
             return RedirectToAction("Login", "Login");
         }
 
         [HttpPost]
         [Route("edit")]
-        public async Task<IActionResult> Edit(Category category)
+        public async Task<IActionResult> Edit(Sizes c)
         {
             client.BaseAddress = new Uri(host_api);
-            var result = await client.PutAsJsonAsync<Category>("api/categories/" + category.Id,category);
+            var result = await client.PutAsJsonAsync<Sizes>("api/sizes/" + c.Id, c);
             return RedirectToAction("Index");
         }
 
@@ -121,14 +130,14 @@ namespace Project4AdminPage.Controllers
                 Users u = JsonConvert.DeserializeObject<Users>(user);
                 ViewBag.Logined = u;
 
-                await client.DeleteAsync("api/categories/" + id);
+                await client.DeleteAsync("api/sizes/" + id);
                 return RedirectToAction("Index");
             }
             return RedirectToAction("Login", "Login");
         }
 
         [Route("search")]
-        public async Task<IActionResult> Search(string key)
+        public async Task<IActionResult> Search(string key, int productID)
         {
             client.BaseAddress = new Uri(host_api);
             var _data = await client.GetStringAsync("api/logineds");
@@ -140,17 +149,37 @@ namespace Project4AdminPage.Controllers
                 Users u = JsonConvert.DeserializeObject<Users>(user);
                 ViewBag.Logined = u;
 
+                var data = await client.GetStringAsync("api/sizes");
                 if (key == "" || key == null)
                 {
-                    return RedirectToAction("Index");
+                    if (productID == 0)
+                    {
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        data = await client.GetStringAsync("api/sizes/search?productId=" + productID);
+                    }
                 }
+                else
+                {
+                    if (productID == 0)
+                    {
+                        data = await client.GetStringAsync("api/sizes/search?search=" + key);
+                    }
+                    else
+                    {
+                        data = await client.GetStringAsync("api/sizes/search?search=" + key + "&productId=" + productID);
+                    }
+                }
+                List<Sizes> c = JsonConvert.DeserializeObject<List<Sizes>>(data);
 
-                var data = await client.GetStringAsync("api/categories/search?search=" + key);
-                List<Category> categories = JsonConvert.DeserializeObject<List<Category>>(data);
-                return View("Index", categories);
+                var product = await client.GetStringAsync("api/products");
+                List<Product> products = JsonConvert.DeserializeObject<List<Product>>(product);
+                ViewBag.Product = products;
+                return View("Index", c);
             }
             return RedirectToAction("Login", "Login");
         }
-
     }
 }

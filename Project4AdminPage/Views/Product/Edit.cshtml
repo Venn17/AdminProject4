@@ -1,0 +1,67 @@
+﻿@model Project4AdminPage.Models.Product
+
+@{
+    ViewData["Title"] = "Edit";
+}
+<div class="text-center">
+    <h2>Chỉnh Sửa Sản Phẩm</h2>
+</div>
+
+<hr />
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <form asp-action="Edit" method="post" asp-controller="Product" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="text-center">
+                <img src="~/images/products/@Model.Image" alt="@Model.Name" width="200" />
+            </div>
+            <div class="form-group">
+                <input hidden asp-for="Id" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label">Tên Sản Phẩm</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Price" class="control-label">Giá</label>
+                <input asp-for="Price" class="form-control" />
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="SalePrice" class="control-label">Giá KM</label>
+                <input asp-for="SalePrice" class="form-control" />
+                <span asp-validation-for="SalePrice" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Image" class="control-label">Ảnh Minh Họa</label>
+                <input asp-for="Image" type="file" class="form-control" />
+                <span asp-validation-for="Image" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label">Mô Tả</label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Sold" class="control-label">Số Lượng Đã Bán</label>
+                <input asp-for="Sold" class="form-control" type="number" min="0" />
+                <span asp-validation-for="Sold" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CategoryID" class="control-label">Thể Loại</label>
+                <select asp-for="CategoryID" class="form-control" onfocus='this.size=5;' onblur='this.size=1;' onchange='this.size = 1; this.blur();'>
+                    @foreach (var item in ViewBag.Category)
+                    {
+                        <option value="@item.Id">@item.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Lưu Thông Tin" class="btn btn-success" />
+                <a class="btn btn-primary" asp-action="Index">Quay Lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+

@@ -1,0 +1,107 @@
+﻿@model IEnumerable<Project4AdminPage.Models.Topping>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="text-center">
+    <h2>Quản Lý Topping Sản Phẩm</h2>
+</div>
+<form asp-controller="Topping" asp-action="Search" method="get" class="form-inline">
+    <div class="col-6">
+        <a asp-controller="Topping" asp-action="Create" class="btn btn-warning">Thêm mới</a>
+    </div>
+    <div class="form-group col-6">
+        <select name="productID" class="form-control mr-1"  onfocus='this.size=5;' onblur='this.size=1;' onchange='this.size = 1; this.blur();'>
+            <option value="0">Các Sản Phẩm</option>
+            @foreach (var pro in ViewBag.Product)
+            {
+                <option value="@pro.Id">@pro.Name</option>
+            }
+        </select>
+        <input class="form-control mr-1" type="text" placeholder="Tên topping" name="key" />
+        <input type="submit" value="Tìm Kiếm" class="btn btn-success" />
+    </div>
+</form>
+<table class="table table-bordered mt-2">
+    <thead>
+        <tr>
+            <th>
+                Tên Sản Phẩm
+            </th>
+            <th>
+                Topping
+            </th>
+            <th>
+                Giá bán
+            </th>
+            <th>
+                Trạng Thái
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @foreach (var pro in ViewBag.Product)
+                {
+                    if(pro.Id == item.ProductID)
+                    {
+                        <p>@pro.Name</p>
+                    }
+                }
+            </td>
+
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @if (item.Status == true)
+                {
+                    <p class="text-success">Đang Hoạt Động</p>
+                }
+                else
+                {
+                    <p class="text-danger">Không Hoạt Động</p>
+                }
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price) $
+            </td>
+            <td>
+                <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Sửa</a> |
+                <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+@if (ViewBag.totalPage > 1)
+{
+<nav aria-label="Page navigation example">
+    <ul class="pagination">
+        @if (ViewBag.currentPage > 1)
+        {
+            <li class="page-item"><a class="page-link" href="?page=@(ViewBag.CurrentPage - 1)">Previous</a></li>
+        }
+        @for (int i = 1; i <= ViewBag.totalPage; i++)
+        {
+            if (i == ViewBag.currentPage)
+            {
+                <li class="page-item active"><a class="page-link" href="?page=@i">@i</a></li>
+            }
+            else
+            {
+                <li class="page-item"><a class="page-link" href="?page=@i">@i</a></li>
+            }
+
+        }
+        @if (ViewBag.currentPage < ViewBag.totalPage)
+        {
+            <li class="page-item"><a class="page-link" href="?page=@(ViewBag.CurrentPage + 1)">Next</a></li>
+        }
+    </ul>
+</nav>
+}

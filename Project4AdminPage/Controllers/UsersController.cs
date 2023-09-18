@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -9,8 +10,8 @@ using Project4AdminPage.Models;
 
 namespace Project4AdminPage.Controllers
 {
-    [Route("categories")]
-    public class CategoryController : Controller
+    [Route("users")]
+    public class UsersController : Controller
     {
         string host_api = "http://localhost:50041/";
         HttpClient client = new HttpClient();
@@ -27,25 +28,49 @@ namespace Project4AdminPage.Controllers
                 Users u = JsonConvert.DeserializeObject<Users>(user);
                 ViewBag.Logined = u;
 
-                var data = await client.GetStringAsync("api/categories");
+                var data = await client.GetStringAsync("api/users");
                 int start = (page - 1) * 5;
-                List<Category> categories = JsonConvert.DeserializeObject<List<Category>>(data);
-                List<Category> datas = categories.Skip(start).Take(5).ToList();
-                int totalPage = categories.Count() / 5;
-                if (categories.Count() % 5 > 0)
+                List<Users> users = JsonConvert.DeserializeObject<List<Users>>(data);
+                List<Users> data_page = users.Skip(start).Take(5).ToList();
+                int totalPage = users.Count() / 5;
+                if (users.Count() % 5 > 0)
                 {
                     totalPage = totalPage + 1;
                 }
                 ViewBag.totalPage = totalPage;
                 ViewBag.currentPage = page;
-                return View(datas);
+                return View(data_page);
             }
-            return RedirectToAction("Login","Login");
+            return RedirectToAction("Login", "Login");
         }
 
-        [HttpGet]
+        
+        [HttpPost]
         [Route("create")]
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create([Bind("Name", "Email","Phone","Address","Password","Avatar")] Users u)
+        {
+            client.BaseAddress = new Uri(host_api);
+            if (ModelState.IsValid)
+            {
+                FileStream fileStream;
+                var file = HttpContext.Request.Form.Files;
+                if (file != null && file[0].Length > 0)
+                {
+                    var data = file[0];
+                    var fileName = data.FileName;
+                    var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/avatars", fileName);
+                    fileStream = new FileStream(path, FileMode.Create);
+                    data.CopyTo(fileStream);
+                    u.Avatar = fileName;
+                    u.Role = 0;
+                    var result = await client.PostAsJsonAsync("api/users", u);
+                }
+            }
+            return RedirectToAction("Index");
+        }
+
+        [Route("edit")]
+        public async Task<IActionResult> Edit(int? id)
         {
             client.BaseAddress = new Uri(host_api);
             var _data = await client.GetStringAsync("api/logineds");
@@ -63,48 +88,31 @@ namespace Project4AdminPage.Controllers
         }
 
         [HttpPost]
-        [Route("create")]
-        public async Task<IActionResult> Create([Bind("Name")] string name)
-        {
-            Category category = new Category();
-            category.Name = name;
-            category.Status = true;
-            if (!ModelState.IsValid)
-            {
-                return NotFound("Không có thông tin !");
-            }
-            client.BaseAddress = new Uri(host_api);
-            var result = await client.PostAsJsonAsync("api/categories", category);
-
-            return RedirectToAction("Index");
-        }
-
         [Route("edit")]
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(Users c)
         {
             client.BaseAddress = new Uri(host_api);
-            var _data = await client.GetStringAsync("api/logineds");
-            List<Logined> logined = JsonConvert.DeserializeObject<List<Logined>>(_data);
-            if (logined.Count() > 0)
+            if (ModelState.IsValid)
             {
-                var cus = logined[0];
-                var user = await client.GetStringAsync("api/logineds/" + cus.UserID);
-                Users u = JsonConvert.DeserializeObject<Users>(user);
-                ViewBag.Logined = u;
-
-                var result = await client.GetStringAsync("api/categories/" + id);
-                Category category = JsonConvert.DeserializeObject<Category>(result);
-                return View(category);
+                FileStream fileStream;
+                var file = HttpContext.Request.Form.Files;
+                if (file.Count == 0)
+                {
+                    var getUser = await client.GetStringAsync("api/users/" + c.Id);
+                    Users old_user = JsonConvert.DeserializeObject<Users>(getUser);
+                    c.Avatar = old_user.Avatar;
+                }
+                else
+                {
+                    var data = file[0];
+                    var fileName = data.FileName;
+                    var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/avatars", fileName);
+                    fileStream = new FileStream(path, FileMode.Create);
+                    data.CopyTo(fileStream);
+                    c.Avatar = fileName;
+                }
+                var result = await client.PutAsJsonAsync<Users>("api/users/" + c.Id, c);
             }
-            return RedirectToAction("Login", "Login");
-        }
-
-        [HttpPost]
-        [Route("edit")]
-        public async Task<IActionResult> Edit(Category category)
-        {
-            client.BaseAddress = new Uri(host_api);
-            var result = await client.PutAsJsonAsync<Category>("api/categories/" + category.Id,category);
             return RedirectToAction("Index");
         }
 
@@ -121,14 +129,14 @@ namespace Project4AdminPage.Controllers
                 Users u = JsonConvert.DeserializeObject<Users>(user);
                 ViewBag.Logined = u;
 
-                await client.DeleteAsync("api/categories/" + id);
+                await client.DeleteAsync("api/users/" + id);
                 return RedirectToAction("Index");
             }
             return RedirectToAction("Login", "Login");
         }
 
         [Route("search")]
-        public async Task<IActionResult> Search(string key)
+        public async Task<IActionResult> Search(string key, int productID)
         {
             client.BaseAddress = new Uri(host_api);
             var _data = await client.GetStringAsync("api/logineds");
@@ -140,17 +148,15 @@ namespace Project4AdminPage.Controllers
                 Users u = JsonConvert.DeserializeObject<Users>(user);
                 ViewBag.Logined = u;
 
+                var data = await client.GetStringAsync("api/users");
                 if (key == "" || key == null)
                 {
-                    return RedirectToAction("Index");
+                    data = await client.GetStringAsync("api/users/search?search=" + key);
                 }
-
-                var data = await client.GetStringAsync("api/categories/search?search=" + key);
-                List<Category> categories = JsonConvert.DeserializeObject<List<Category>>(data);
-                return View("Index", categories);
+                List<Users> c = JsonConvert.DeserializeObject<List<Users>>(data);
+                return View("Index", c);
             }
             return RedirectToAction("Login", "Login");
         }
-
     }
 }
